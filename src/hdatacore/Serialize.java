@@ -39,7 +39,7 @@ import org.projecthdata.hdata.hrf.serialization.HRFFileSystemSerializer;
 import org.projecthdata.hdata.hrf.util.DateConverter;
 import org.projecthdata.hdata.hrf.util.hDataContentResolver;
 import org.projecthdata.hdata.schemas._2009._06.allergy.Allergy;
-import org.projecthdata.hdata.schemas._2009._06.allergy_types.Severity;
+import org.projecthdata.hdata.schemas._2009._06.allergy.Severity;
 import org.projecthdata.hdata.schemas._2009._06.core.Address;
 import org.projecthdata.hdata.schemas._2009._06.core.Name;
 import org.projecthdata.hdata.schemas._2009._06.core.Telecom;
@@ -47,9 +47,9 @@ import org.projecthdata.hdata.schemas._2009._06.core.DateRange;
 import org.projecthdata.hdata.schemas._2009._06.core.Language;
 import org.projecthdata.hdata.schemas._2009._06.core.MaritalStatus;
 import org.projecthdata.hdata.schemas._2009._06.core.Race;
-import org.projecthdata.hdata.schemas._2009._06.medication.Medications;
-import org.projecthdata.hdata.schemas._2009._06.medication_types.Dose;
-import org.projecthdata.hdata.schemas._2009._06.medication_types.MedicationInformation;
+import org.projecthdata.hdata.schemas._2009._06.medication.Medication;
+import org.projecthdata.hdata.schemas._2009._06.medication.Dose;
+import org.projecthdata.hdata.schemas._2009._06.medication.MedicationInformation;
 import org.projecthdata.hdata.schemas._2009._06.patient_information.Patient;
 import org.projecthdata.hdata.schemas._2009._11.metadata.DocumentMetaData;
 
@@ -229,7 +229,7 @@ public class Serialize {
                 DateRange dr = new DateRange();
                 dr.setHigh(DateConverter.getXLMDateFromUtilsDate(new Date(102, 5, 2)));
                 dr.setLow(DateConverter.getXLMDateFromUtilsDate(new Date(77, 6, 2)));
-                a.setEffectiveDate(dr);
+                a.setAdverseEventDate(dr);
 
 
 
@@ -254,25 +254,23 @@ public class Serialize {
 
                 hrf.addSection(allergies, "/adversereactions");
 
-                Section meds = new Section("Medications", cr.getNamespace(Medications.class), "medications");
+                Section meds = new Section("Medications", cr.getNamespace(Medication.class), "medications");
 
-                Medications medi = new Medications();
+                Medication medi = new Medication();
                 
                 MedicationInformation mi = new MedicationInformation(); 
-                MedicationInformation.ManufacturedProduct mp = new MedicationInformation.ManufacturedProduct(); 
-                MedicationInformation.ManufacturedProduct.ManufacturedMaterial mm = new MedicationInformation.ManufacturedProduct.ManufacturedMaterial(); 
-                mm.setName("Advil"); 
+                MedicationInformation.ManufacturedMaterial mm = new MedicationInformation.ManufacturedMaterial(); 
+                mm.setFreeTextBrandName("Advil");
                 mm.setLotNumberText("AX-342-2009"); 
-                mp.setManufacturedMaterial(mm); 
-                mi.setManufacturedProduct(mp); 
-                medi.setConsumable(mi); 
+                mi.setManufacturedMaterial(mm);
+                medi.setMedicationInformation(mi);
 
                 Dose dose = new Dose();
                 dose.setUnit("mg");
                 dose.setValue("200");
                 
-                medi.setDoseQuantity(dose);
-                medi.setText("Take this for head aches."); 
+                medi.setDose(dose);
+                medi.setFreeTextSig("Take this for head aches.");
 
                 DocumentMetaData medMd = new DocumentMetaData();
                 medMd.setDocumentId("IBU-200-12312");
@@ -285,7 +283,11 @@ public class Serialize {
                 try {
                     HRFFileSystemSerializer ser = new HRFFileSystemSerializer();
 
-                    ser.serialize(new File("/tmp/hrf/patient"), hrf);
+                    File file = new File("/tmp/hrf/patient");
+
+                    deleteDirectory(file);
+
+                    ser.serialize(file, hrf);
                 } catch (IOException ex) {
                     Logger.getLogger(Serialize.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -301,4 +303,18 @@ public class Serialize {
                 Logger.getLogger(Serialize.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        private static boolean deleteDirectory(File path) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteDirectory(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        return (path.delete());
+    }
 }
