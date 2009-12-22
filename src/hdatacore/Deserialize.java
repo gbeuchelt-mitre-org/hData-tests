@@ -30,8 +30,6 @@ import org.projecthdata.hdata.hrf.ExtensionMissingException;
 import org.projecthdata.hdata.hrf.serialization.HRFFileSystemSerializer;
 import org.projecthdata.hdata.hrf.serialization.HRFSerialializationException;
 import org.projecthdata.hdata.hrf.util.hDataContentResolver;
-import org.projecthdata.hdata.schemas._2009._06.allergy.Allergy;
-import org.projecthdata.hdata.schemas._2009._06.patient_information.Patient;
 
 /**
  *
